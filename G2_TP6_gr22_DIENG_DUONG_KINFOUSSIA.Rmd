@@ -1,0 +1,389 @@
+---
+title: "G2_TP6_gr22_DIENG_DUONG_KINFOUSSIA"
+author: "Willy Kinfoussia, Seydina Dieng, Ngo Duong"
+date: "13/05/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Tests d'Hypothèse
+### Tests paramétriques
+1. Construire le NP test. Quelle est la statistique du test, $T(\mathbf{X})$?
+Étant donné $n=10, \sigma_0 = 1, \mu_0 = 0, \mu_1 = 0.1$, évaluer les valeurs théoriques pour $k_\alpha$ et $\beta$.
+Quelle est l'interprétation de ces valeurs $\alpha$ et $\beta$?
+
+
+
+\begin{equation}
+\begin{cases} 
+H_0: \mu = \mu_0 \\
+H_1: \mu = \mu_1
+\end{cases} 
+\end{equation*}
+
+où $\mu_1 > \mu_0$. \
+
+Calcul de la statistique de test. \
+
+On sait que : $f_{Y}(x;\mu,\sigma) = \frac{1}{x \sigma \sqrt{2 \pi}} \exp\left(- \frac{(\ln x - \mu)^2}{2\sigma^2}\right)$
+Donc la région de rejet est:
+$$
+\begin{aligned} 
+W
+&= \{(x_1,...,x_n)\text{;}\exp(-\frac{\mu_0 - \mu_1}{\sigma^2}\sum_{i=1}^{n} \ln{x_i} + \frac{\mu_0^2-\mu_1^2}{2\sigma^2})>k\} \\
+&= \{(x_1,...,x_n)\text{;} \exp(-\frac{\mu_0 - \mu_1}{\sigma^2}\sum_{i=1}^{n} \ln({x_i})) \exp(\frac{\mu_0^2-\mu_1^2}{2\sigma^2})>k  \} \\
+&= \{(x_1,...,x_n)\text{;}-\frac{\mu_0 - \mu_1}{\sigma^2}\sum_{i=1}^{n} \ln({x_i})> \ln(\frac{k}{\exp(\frac{\mu_0^2-\mu_1^2}{2\sigma^2})}) \} \\
+&= \{(x_1,...,x_n)\text{;}\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})>-\frac{\sigma^2}{n(\mu_0 - \mu_1)}\ln(\frac{k}{\exp(\frac{\mu_0^2-\mu_1^2}{2\sigma^2})})\} \\
+&= \{(x_1,...,x_n)\text{;}\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})>c\} \\
+\end{aligned}
+$$
+où 
+$c=\frac{\mu_0+\mu_1}{2n}\ln(k)$.\
+
+La statistique de test est $T(X)=\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})=\overline{\ln X_n}$ \
+
+Détermination de $K_{alpha}$: sous l'hypothèse $H_0$, $\overline{\ln X_n}$ suit une loi $\mathcal{N}(\mu_0,\frac{\sigma^2}{n})$. \
+Donc:
+$\mathbb{P}_{H_0}(W) = \mathbb{P}_{H_0} (\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})>K_\alpha)$ \
+
+On sait que $\overline{\ln X_n}=\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})$.\
+Donc
+$$\mathbb{P}_{H_0}(\frac{\sqrt{n}(\overline{\ln X_n}-\mu_0)}{\sigma_0} > \frac{\sqrt{n}(K_\alpha -\mu_0)}{\sigma_0})$$
+$$=1-\phi(\frac{\sqrt{n}(K_\alpha -\mu_0)}{\sigma_0})=\alpha.$$ où $\phi$ est la fonction de répartition de la gaussienne centrée réduite. D'où $K_\alpha = \mu_0 + \frac{\sigma_0}{\sqrt(n)}\phi^{-1}(1-\alpha)$ \
+Calcul de $\beta$:  sous l'hypothèse $H_1$, $\overline{\ln X_n}$ suit une loi $\mathcal{N}(\mu_1,\frac{\sigma_0^2}{n})$.\ Donc: $$\beta = \mathbb{P}_{H_1}(W) = \mathbb{P}_{H_1} (\overline{\ln X_n}>K_\alpha) = 1 - \phi(\frac{\sqrt{n}(\mu_0 - \mu_1)}{\sigma_0} + \phi^{-1}(1-\alpha))$$\
+
+
+
+On a  $n=10, \sigma_0=1, \mu_0=0, \mu_1=0.1$\
+Donc $K_\alpha = \frac{1}{\sqrt{10}}\phi^{-1}(1-\alpha)$ et $\beta = 1-\phi(-\frac{\sqrt{10}}{10}+\phi^{-1}(1-\alpha))$\
+$\alpha$ (erreur de première espèce) est la probabilité de rejeter à tort l'hypothèse $H_0$. \
+
+$\beta$ (puissance du test) est la probabilité de rejeter $H_0$ lorsque $H_1$ est vraie.
+
+
+2. Simulez les données avec le paramètre ci-dessus et effectuez le test de niveau $\alpha=0.1$ $M=100$ fois. Donnez un approxmation de $\alpha$ et $\beta$.
+Le test contrôle-t-il l'erreurs comme promis ? 
+```{r test}
+M=100
+n=10
+alpha=0.1
+sigma_0=1
+mu_0=0
+mu_1=0.1
+K_alpha <- mu_0 + (sigma_0/sqrt(n))*pnorm(1-alpha,mu_0,sigma_0)
+# simulate under H_0
+Tsim = rep(0, M)
+for (i in 1:M){
+  # simulate under H_0
+  x = rnorm(n, mu_0, sigma_0)
+  # test statistic
+  Tsim[i] = (1/n) * sum(x)
+}
+# proportion of wrong rejection
+alpha_hat = mean(Tsim>K_alpha)
+alpha_hat
+
+# simulate under H_1
+Tsim1 = rep(0, M)
+for (i in 1:M){
+# simulate under H_1
+x = rnorm(n, mu_1, sigma_0)
+# test statistic
+Tsim1[i] = (1/n) * sum(x)
+}
+# proportion of correct rejection
+beta_hat = mean(Tsim1>K_alpha)
+beta_hat
+
+
+```
+L'erreur de première espèce est différent de 0.1 puissance du test est faible. Le test ne contrôle pas l'erreur comme promis.
+
+3. Expliquez comment utiliser la valeur $p$ pour établir une règle de décision pour le test.
+
+Pour établir la règle de décision avec p-val, il faut évaluer la statistique de test $T(x)$:
+-Si $T(x) \geq K_\alpha$ alors $p - val \leq \alpha$ \
+-Si $T(x) \leq K_\alpha$ alors $p - val \geq \alpha$ \
+On rejette l'hypothèse $H_0$ dans le cas où $p - val \leq \alpha$ et on la conserve sinon.
+
+4. Répéter pour les tailles d’échantillon croissantes $n = 20, 50, 100$. Quelle est l’influence de la taille de l’échantillon $n$ sur le test?
+
+```{r echantillons}
+M=100
+alpha=0.1
+sigma_0=1
+mu_0=0
+mu_1=0.1
+K_alpha <- mu_0 + (sigma_0/sqrt(n))*pnorm(1-alpha,mu_0,sigma_0)
+for (n in c(20,50,100)){
+  # simulate under H_0
+  Tsim = rep(0, M)
+  for (i in 1:M){
+    # simulate under H_0
+    x = rnorm(n, mu_0, sigma_0)
+    # test statistic
+    Tsim[i] = (1/n) * sum(x)
+  }
+  
+  # proportion of wrong rejection
+  alpha_hat = mean(Tsim>K_alpha)
+  # simulate under H_1
+  Tsim1 = rep(0, M)
+  for (i in 1:M){
+  # simulate under H_1
+  x = rnorm(n, mu_1, sigma_0)
+  # test statistic
+  Tsim1[i] = (1/n) * sum(x)
+  }
+  # proportion of correct rejection
+  beta_hat = mean(Tsim1>K_alpha)
+  print(paste("Approximation d'alpha=",alpha_hat,";beta=",beta_hat, "pour n =",n))
+}
+
+
+```
+Plus la taille de l'échantillon augmente plus la probabilté de rejeter à tort l'hypothèse nulle diminue.
+
+5. Considérer le cas où $\sigma$ est inconnu et répéter les questions précédentes. Y a-t-il une différence dans votre conclusion ?
+
+\textbf{Construction du test NP}
+On choisit les hypothèses suivants :
+
+\begin{equation}
+\begin{cases} 
+H_0: \sigma = \sigma_0 \\
+H_1: \sigma = \sigma_1
+\end{cases} 
+\end{equation} 
+
+avec $\sigma_1>\sigma_0$.
+
+\textit{On détermine la zone de rejet :}
+$$
+\begin{aligned} 
+W
+&= \{(x_1,...,x_n)\text{;}\frac{\prod_{i=1}^n\frac{1}{x_i\sigma_1\sqrt{2\pi}}\exp(-\frac{(\ln(x_i)-\mu)^2}{2\sigma_1^2})}
+{\prod_{i=1}^n\frac{1}{x_i\sigma_0\sqrt{2\pi}}\exp(-\frac{(\ln(x_i)-\mu)^2}{2\sigma_0^2})}>k\} \\
+&= \{(x_1,...,x_n)\text{;}\frac{\sigma_0}{\sigma_1}\exp(\sum_{i=1}^n(\ln(x_i)-\mu))^2*(\frac{1}{2\sigma_0^2}-\frac{1}{2\sigma_1^2}))>k\} \\
+&= \{(x_1,...,x_n)\text{;}\sum_{i=1}^n(\ln(x_i)-\mu))^2*(\frac{1}{2\sigma_0^2}-\frac{1}{2\sigma_1^2})>k'\} \\
+&= \{(x_1,...,x_n)\text{;}\sum_{i=1}^n(\ln(x_i)-\mu))^2>K_\alpha\}
+\end{aligned}
+$$
+On a ainsi notre statistique de test \fbox{$U(X)=\sum_{i=1}^{n}(\ln(x_i)-\mu))^2$}
+
+\textit{Déterminons $K_\alpha$ sous l'hypothèse $H_0$ : $\sigma=\sigma_0$ :} \
+
+Par déf,
+$$
+\begin{aligned} 
+\alpha
+&=P_{H_0}(W) \\
+&=P_{H_0}(U(X)>K_{\alpha}) \\
+&=P_{H_0}(\frac{U(X)}{\sigma_0^2}>\frac{K_{\alpha}}{\sigma_0^2})
+\end{aligned} 
+$$
+On a $\frac{U(X)}{\sigma_0^2}$ qui suit une loi $\chi_n^2$ :
+
+$$
+\begin{aligned} 
+\alpha
+&=1-P_{H_0}(\frac{U(X)}{\sigma_0^2}\leq\frac{K_{\alpha}}{\sigma_0^2}) \\
+&=1-F_{\chi_n^2}(\frac{K_{\alpha}}{\sigma_0^2})
+\end{aligned} 
+$$
+Avec $F_{\chi_n^2}$ la fonction de répartition d'une variable de loi $\chi_n^2$.
+
+Ainsi, on en déduit que \fbox{$K_\alpha=F_{\chi_n^2}^{-1}(1-\alpha)\sigma_0^2$}.
+
+\clearpage
+
+\textit{Enfin, déterminons $\beta$ sous l'hypothèse $H_1$ : $\sigma=\sigma_1$ :} \
+
+$$
+\begin{aligned} 
+\beta
+&=P_{H_1}(W) \\
+&=P_{H_1}(\frac{U(X)}{\sigma_1^2}>\frac{K_{\alpha}}{\sigma_1^2}) \\
+\end{aligned}
+$$
+On a $\frac{U(X)}{\sigma_1^2}$ qui suit une loi $\chi_n^2$ :
+
+$$
+\begin{aligned} 
+\beta
+&=1-P_{H_1}(\frac{U(X)}{\sigma_1^2}\leq\frac{K_{\alpha}}{\sigma_1^2}) \\
+&=1-F_{\chi_n^2}(\frac{K_{\alpha}}{\sigma_1^2}) \\
+&=1-F_{\chi_n^2}(\frac{F_{\chi_n^2}^{-1}(1-\alpha)\sigma_0^2}{\sigma_1^2})
+\end{aligned} 
+$$
+D'où, \fbox{$\beta=1-F_{\chi_n^2}(\frac{F_{\chi_n^2}^{-1}(1-\alpha)\sigma_0^2}{\sigma_1^2})$}
+
+Évaluons les expressions trouvées avec les paramètres suivants : $n=10, \sigma_0=1,\sigma_1=2,\mu=0$
+
+\textbf{Simulation et test}
+
+On reprend les valeurs précédentes et on ajoute $\alpha=0.1,M=100$
+
+```{r simulation-logn-variance}
+U=function(X,mu){
+  return(sum(log(X)-mu)**2)
+}
+n=10
+M=100
+mu=0
+sigma_0=1
+sigma_1=2
+alpha=0.1
+h0_count=0
+for(i in 1:M)
+{
+  X_sim=rlnorm(n, meanlog=mu, sdlog=sigma_0)
+  k_alpha=qchisq(1-alpha, n)*(sigma_0**2)
+  if(U(X_sim, mu)>k_alpha)
+  {
+    h0_count=h0_count+1
+  }
+}
+
+taux_h0_rej=h0_count/M
+taux_h1_verif=1-taux_h0_rej
+print(paste("Approximation d'alpha=",taux_h0_rej,";beta=",taux_h1_verif))
+```
+
+
+
+### Tests non-paramétriques: test de permutation  et approximation Monte Carlo.
+
+7. Compléter le test non-paramétrique pour les données dur l'ozone, en été et en hiver. Quelles sont les hyptohèses de ce test? La conclusion est-elle cohérente avec celle du test paramétrique ? 
+
+```{r question7-test non paramétrique}
+
+summer_ozone = read.csv("summer_ozone.csv")
+winter_ozone = read.csv("winter_ozone.csv")
+
+summer_rur = summer_ozone$RUR.SE
+summer_neuil = summer_ozone$NEUIL
+winter_rur = winter_ozone$RUR.SE
+winter_neuil = winter_ozone$NEUIL
+
+M = 100
+alpha = 0.05
+n = length(summer_rur)
+D0 = (summer_rur - summer_neuil)
+TD = c(1/n * sum(D0))
+
+#calcule des T(X)
+for(i in 2:M){
+  D = c()
+  for(j in 1:n){
+    D = c(D, sample(c(-1,1), 1)*D0[j])
+  }
+  TD = c(TD, 1/n * sum(D))
+}
+
+# quantile ka = quantile(1 - alpha) loi  de T(X)
+ka = 0
+for(i in 1:M){
+  p = 0
+  for(j in 1:M){
+    if(TD[j] < TD[i]){
+      p = p+1
+    }
+  }
+  if(p == 100*(1-alpha)){
+    ka = TD[i]
+    break
+  }
+}
+
+print(paste("La région de rejet pour l'été est { T(X) > ka } avec ka = ",ka))
+print(paste("ici T(X) = ", TD[1]))
+
+n = length(winter_rur)
+D0 = (winter_rur - winter_neuil)
+TD = c(1/n * sum(D0))
+
+#calcule des T(X)
+for(i in 2:M){
+  D = c()
+  for(j in 1:n){
+    D = c(D, sample(c(-1,1), 1)*D0[j])
+  }
+  TD = c(TD, 1/n * sum(D))
+}
+
+# quantile ka = quantile(1 - alpha) loi  de T(X)
+ka = 0
+for(i in 1:M){
+  p = 0
+  for(j in 1:M){
+    if(TD[j] < TD[i]){
+      p = p+1
+    }
+  }
+  if(p == 100*(1-alpha)){
+    ka = TD[i]
+    break
+  }
+}
+
+print(paste("La région de rejet pour l'hiver est { T(X) > ka } avec ka = ",ka))
+print(paste("ici T(X) = ", TD[1]))
+
+```
+
+Les hypothèses de ce test est qu'on considère les différences comme une loi symmétric autour de 0. Cette hypothèse  est plus large que la loi normale centrée on réduit donc notre risque d'érreur.
+
+### Hypothèses avec plusieurs paramètres: Test du rapport de vraisemblance
+
+8. Pour les données sur l'ozone, on suppose que les valeurs d'ozone pour chaque site (en été) suivent une loi log normale. Effectuez le test du rapport de vraisemblance pour les hypothèses
+\[
+H_0: \mu_1 = \mu_2 \quad H_1: \mu_1 \neq \mu_2 \,.
+\]
+Quelle est la conclusion?
+
+On determine la region de rejet :
+
+$W = \left\{ T(X) > ka \right\}$
+$=> P(W) = P(T(X) > ka) = \alpha$
+$=> P(T(X) < ka) = 1 - \alpha$
+$=> ka = F^{-1}_{X^2_{df}}(1 - \alpha)$
+$Avec\ F^{-1}_{X^2_{df}}\ le\ quantile\ de\  la\  loi\  X^2\  de\  liberte\  df$
+
+```{r question 8 }
+alpha = 0.05
+
+#calcule de la région de rejet
+df = 2 - 1
+ka = qchisq(1-alpha, df)
+
+#calcule de mu2
+lnorm_vraisemblance = function(theta, X){
+  return(prod(dlnorm(X, theta[1], theta[2])))
+}
+lnorm_logv = function(theta, X){
+  return(sum(log(dlnorm(X, theta[1], theta[2]))))
+}
+
+mu2 = optim(c(1, 1), function(theta)
+  {return(-lnorm_logv(theta, summer_neuil))})$par[1]
+
+#calcule de T(X)
+X = summer_rur
+maxH1 = optim(c(mu2, 1), function(theta){return(-lnorm_logv(theta, X))})$value
+
+maxH0 = optimize(function(theta) 
+                {return(-lnorm_logv(c(mu2, theta), X))}, c(-100, 100))$objective
+
+TX = 2*log(maxH1/maxH0)
+print(paste("La région de rejet pour l'été est { T(X) > ka } avec ka = ",ka))
+print(paste("ici T(X) = ", TX))
+```
+
+9. Constuire le test de Kolmogorov (Kolmogorov-Smirnov) de niveau $\alpha$ (sur la base de l'approximation asymmtotique). Suggérer une méthode alternative basée sur la simulation.
+
+

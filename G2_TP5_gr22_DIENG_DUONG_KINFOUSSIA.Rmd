@@ -1,0 +1,909 @@
+---
+title: "G2_TP5_gr22_DIENG_DUONG_KINFOUSSIA"
+author: "Willy Kinfoussia, Seydina Dieng, Ngo Duong"
+date: "02/05/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Normalité asymptotique de l’EMV et l'intervalle de confidence
+
+On sait que la distribution asymptotique de l'estimateur du maximum de vraisemblance est
+\[
+\hat{\theta}\sim \mathcal{N}(\theta,I_n(\theta)^{-1} ),
+\]
+où $I_n(\theta)$ est l'information de Fisher du modèle. Celle-ci fournit une base pour l'inférence statistique, telle que la construction d'un intervalle de confiance.
+
+1. Soit une loi Normale avec $\mu=2$ et $\sigma=1$. Simuler un échantillon i.i.d de taille $n=10$. Trouver des estimateurs de $\theta = (\mu, \sigma)$. Donner l'intervalle de confiance à 95% théorique pour $\mu$. Construire des intervalles de confiance à 95% pour $\mu$ par la normalité asymptotique. 
+
+```{r loi normale}
+n = 10
+moyenne = 2
+sigma = 1
+
+log_v = function(X, mu, sig){
+  return(sum(log(dnorm(X, mu, sig))))
+}
+#echantillon
+normale <- rnorm(n,moyenne,sigma)
+
+#estimateur
+estimateur <- optim(c(1,1), function(theta) -log_v(normale, theta[1], theta[2]))
+
+#calcul de Xn et Sn
+Xn <- mean(normale)
+Sn <- 0
+for(x in normale){
+  Sn <- Sn + (x - Xn)**2
+}
+Sn <- sqrt(1/(n-1) * Sn)
+
+#intercalle de Student de degré n-1
+intervalle_de_student <- c(Xn - Sn/sqrt(n)*qt(0.975, n-1), 
+                           Xn + Sn/sqrt(n)*qt(0.975, n-1))
+
+#intervalle de confiance asymptotique
+intervalle_normalite_asymptotique <- c(Xn - Sn/sqrt(n)*qnorm(0.975), 
+                                       Xn + Sn/sqrt(n)*qnorm(0.975))
+
+intervalle_de_student
+intervalle_normalite_asymptotique
+
+```
+
+2. Répéter la simulation $N=100$ fois pour construire les intervalles de confiance théoriques et asymptotiques. Combien de fois ces intervalles contiennent-ils le vrai paramètre? 
+Confirment ils la couverture de 95%? Tracer l'histogramme des valeurs du maximum de vraisemblance. 
+La distribution empirique  de l'estimateur se rapproche-t-elle de la distribution asymptotique?
+
+```{r intervalle de confiance}
+student_score = 0
+asymptotique_score = 0
+estimateurs <- c()
+
+for(i in 1:100){
+  normale <- rnorm(n,moyenne,sigma)
+  estimateur <- optim(c(1,1), function(theta) -log_v(normale, theta[1], theta[2]))
+  estimateurs <- c(estimateurs, estimateur$par[1])
+  Xn <- mean(normale)
+  Sn <- 0
+  for(x in normale){
+    Sn <- Sn + (x - Xn)**2
+  }
+  Sn <- sqrt(1/(n-1) * Sn)
+  student <- c(Xn - Sn/sqrt(n)*qt(0.975, n-1), Xn + Sn/sqrt(n)*qt(0.975, n-1))
+  asymptotique <- c(Xn - Sn/sqrt(n)*qnorm(0.975), Xn + Sn/sqrt(n)*qnorm(0.975))
+  if(asymptotique[1] <= moyenne && moyenne <= asymptotique[2]){
+    asymptotique_score <- asymptotique_score + 1
+  }
+  if(student[1] <= moyenne && moyenne <= student[2]){
+    student_score <- student_score + 1
+  }
+}
+student_score
+asymptotique_score
+hist(estimateurs)
+```
+
+On remarque que la couverture à 95% est respecté et que la distribution de l'estimateur se rapproche de la distribution asymptotique.
+
+3. Répéter pour les tailles d'échantillon croissantes $n = 20, 50, 100$. Calculer la couverture empirique des intervalles de confiance. Quelle est l'influence de la taille de l'échantillon $n$ sur l'inférence asymptotique?
+
+```{r influence de n sur intervalle}
+student_score = 0
+asymptotique_score = 0
+
+for(n in c(20,50,100)){
+  student_score <- 0
+  asymptotique_score <- 0
+  for(i in 1:100){
+    normale <- rnorm(n,moyenne,sigma)
+    Xn <- mean(normale)
+    Sn <- 0
+    for(x in normale){
+      Sn <- Sn + (x - Xn)**2
+    }
+    Sn <- sqrt(1/(n-1) * Sn)
+    student <- c(Xn - Sn/sqrt(n)*qt(0.975, n-1), Xn + Sn/sqrt(n)*qt(0.975, n-1))
+    asymptotique <- c(Xn - Sn/sqrt(n)*qnorm(0.975), Xn + Sn/sqrt(n)*qnorm(0.975))
+    if(asymptotique[1] <= moyenne && moyenne <= asymptotique[2]){
+      asymptotique_score <- asymptotique_score + 1
+    }
+    if(student[1] <= moyenne && moyenne <= student[2]){
+      student_score <- student_score + 1
+    }
+  }
+  print(paste("n=", n))
+  print(paste("score student : ", student_score))
+  print(paste("score normalité asymptotique : ", asymptotique_score))
+}
+```
+
+on remarque que l'augmentation de n permet d'améliorer la couverture à partir d'un certain seuil.
+
+
+4. Pour un échantillon de la loi Weibull avec les paramètres $\theta = (a,b) = (1.5,3)$ de taille $n=10$, estimer la covariance asymptotique d'estimateur. En utilisant cela, donner un intervalle de confiance asymptotique à 95% pour $a$ et $b$. La vraie valeur est-elle incluse dans ces intervalles?
+
+```{r Weibull}
+a = 1.5
+b = 3
+n = 10
+weibull <- rweibull(n,a,b)
+logv_Weibull = function(X,theta){return(sum(log(dweibull(X,theta[1], theta[2]))))}
+theta_chapeau <- optim(c(1,1), function(theta) -logv_Weibull(weibull,theta))
+
+epsilon <- c()
+for (i in 1:2) {
+  epsilon <- c(epsilon, runif(1, 10^-6, 10^-5))
+}
+#Creation des li
+li_creation = function(x){
+  li <- c()
+  for (i in 1:2) {
+    if (i == x){
+      li <- c(li, 1)
+    }
+    else{
+      li <- c(li, 0)
+    }
+  }
+  return(li)
+}
+
+l <- c()
+for (i in 1:2) {
+  l<-c(l,li_creation(i))
+}
+l = matrix(l, nrow = 2)
+elements <- c()
+#Creation de la matrice de covariance
+for (i in 1:2) {
+  for (j in 1:2){
+    x<-(logv_Weibull(weibull,theta_chapeau$par+epsilon[i]*l[i,]+epsilon[j]*l[j,])
+     -logv_Weibull(weibull,theta_chapeau$par+epsilon[i]*l[i,])
+     -logv_Weibull(weibull,theta_chapeau$par+epsilon[j]*l[j,])
+     +logv_Weibull(weibull,theta_chapeau$par))
+    y <- epsilon[i]*epsilon[j]
+    elements <- c(elements, x/y)
+  }
+}
+H_theta = matrix(elements, nrow = 2)
+#Opposé de l'inverse de H_theta
+M_weibull = (-1/(H_theta[1, 1]*H_theta[2, 2] - H_theta[1, 2]*H_theta[2, 1]))* 
+  matrix(c(H_theta[2, 2],-H_theta[1, 2],-H_theta[2, 1],H_theta[1, 1]), nrow = 2)
+
+#intervalle de confiance asymptotique
+
+normal_asympto_a <- c(theta_chapeau$par[1] - (M_weibull[1,1]/sqrt(n))*qnorm(0.975),
+                     theta_chapeau$par[1] + (M_weibull[1,1]/sqrt(n))*qnorm(0.975))
+#intervalle de confiance pour a
+normal_asympto_a
+
+normal_asympto_b <- c(theta_chapeau$par[2] - (M_weibull[2,2]/sqrt(n))*qnorm(0.975), 
+                     theta_chapeau$par[2] + (M_weibull[2,2]/sqrt(n))*qnorm(0.975))
+#intervalle de confiance pour b
+normal_asympto_b
+```
+a et b ne se trouvent pas dans l'intervalle de confiance.
+
+5. Répéter le calcul des intervalles de confiance $N=100$ fois et donner la couverture empirique de l'intervalle de confiance. Est-ce proche de la valeur théorique?
+
+```{r couverture}
+a = 1.5
+b = 3
+n= 10
+asymptotique_a_score = 0
+asymptotique_b_score = 0
+n = 10
+for (i in 1:100){
+  #calcul de la matrice covariance
+  weibull <- rweibull(n,a,b)
+  theta_chapeau <- optim(c(1,1), function(theta) -logv_Weibull(weibull,theta))
+  epsilon <- c()
+  for (i in 1:2) {
+    epsilon <- c(epsilon, runif(1, 10^-7, 10^-6))
+  }
+  elements <- c()
+  #Creation de la matrice de covariance
+  for (i in 1:2) {
+    for (j in 1:2){
+      x<-(logv_Weibull(weibull,theta_chapeau$par+epsilon[i]*l[i,]+epsilon[j]*l[j,])
+       -logv_Weibull(weibull,theta_chapeau$par+epsilon[i]*l[i,])
+       -logv_Weibull(weibull,theta_chapeau$par+epsilon[j]*l[j,])
+       +logv_Weibull(weibull,theta_chapeau$par))
+      y <- epsilon[i]*epsilon[j]
+      elements <- c(elements, x/y)
+    }
+  }
+  H_theta = matrix(elements, nrow = 2)
+  M_weibull = (-1/(H_theta[1, 1]*H_theta[2, 2] - H_theta[1, 2]*H_theta[2, 1]))* 
+    matrix(c(H_theta[2, 2],-H_theta[1, 2],-H_theta[2, 1],H_theta[1, 1]), nrow = 2)
+
+  asymptotique_a <- c(theta_chapeau$par[1] - (M_weibull[1,1]/sqrt(n))*qnorm(0.975), 
+                                       theta_chapeau$par[1] + (M_weibull[1,1]/
+                                                          sqrt(n))*qnorm(0.975))
+  asymptotique_b <- c(theta_chapeau$par[2] - (M_weibull[2,2]/sqrt(n))*qnorm(0.975), 
+                                       theta_chapeau$par[2] + (M_weibull[2,2]/
+                                                          sqrt(n))*qnorm(0.975))
+                  
+
+  if(!is.nan(asymptotique_a[1]) && !is.nan(asymptotique_a[2])){
+    if(asymptotique_a[1] <= a && a <= asymptotique_a[2]){
+        asymptotique_a_score <- asymptotique_a_score + 1
+    }
+  }
+  
+  if(!is.nan(asymptotique_b[1]) && !is.nan(asymptotique_b[2])){
+    if(asymptotique_b[1] <= b && b <= asymptotique_b[2]){
+        asymptotique_b_score <- asymptotique_b_score + 1
+    }
+  }
+}
+#Nombre de présence de a dans l'intervalle asymptotique
+asymptotique_a_score
+#Nombre de présence de a dans l'intervalle asymptotique
+asymptotique_b_score
+```
+
+6. Répéter pour les tailles d'échantillon croissantes $n = 20, 50, 100$.
+Calculer la couverture empirique des intervalles de confiance. Quelle est l'influence de la taille de l'échantillon $n$ sur l'inférence asymptotique?
+
+```{r echantillons}
+a = 1.5
+b = 3
+asymptotique_a_score = 0
+asymptotique_b_score = 0
+for (n in c(20,50,100)){
+  for (i in 1:100){
+    #calcul de la matrice covariance
+    weibull <- rweibull(n,a,b)
+    theta_chapeau <- optim(c(1,1), function(theta) -logv_Weibull(weibull,theta))
+    epsilon <- c()
+    for (i in 1:2) {
+      epsilon <- c(epsilon, runif(1, 10^-6, 10^-5))
+    }
+    elements <- c()
+    for (i in 1:2) {
+      for (j in 1:2){
+        x<-(logv_Weibull(weibull,theta_chapeau$par+epsilon[i]*l[i,]+epsilon[j]*l[j,])
+         -logv_Weibull(weibull,theta_chapeau$par+epsilon[i]*l[i,])
+         -logv_Weibull(weibull,theta_chapeau$par+epsilon[j]*l[j,])
+         +logv_Weibull(weibull,theta_chapeau$par))
+        y <- epsilon[i]*epsilon[j]
+        elements <- c(elements, x/y)
+      }
+    }
+    H_theta = matrix(elements, nrow = 2)
+    M_weibull = (-1/(H_theta[1, 1]*H_theta[2, 2] - H_theta[1, 2]*H_theta[2, 1]))* 
+      matrix(c(H_theta[2, 2],-H_theta[1, 2],-H_theta[2, 1],H_theta[1, 1]), nrow = 2)
+  
+    asymptotique_a <- c(theta_chapeau$par[1] - (M_weibull[1,1]/sqrt(n))*qnorm(0.975), 
+                                         theta_chapeau$par[1] + (M_weibull[1,1]/
+                                                            sqrt(n))*qnorm(0.975))
+    asymptotique_b <- c(theta_chapeau$par[2] - (M_weibull[2,2]/sqrt(n))*qnorm(0.975), 
+                                                            theta_chapeau$par[2] + 
+                                            (M_weibull[2,2]/sqrt(n))*qnorm(0.975))
+  
+  
+    
+  
+    if(!is.nan(asymptotique_a[1]) && !is.nan(asymptotique_a[2])){
+      if(asymptotique_a[1] <= a && a <= asymptotique_a[2]){
+          asymptotique_a_score <- asymptotique_a_score + 1
+      }
+    }
+    
+    if(!is.nan(asymptotique_b[1]) && !is.nan(asymptotique_b[2])){
+      if(asymptotique_b[1] <= b && b <= asymptotique_b[2]){
+          asymptotique_b_score <- asymptotique_b_score + 1
+      }
+    }
+  }
+  print(paste("n = ",n))
+  print(paste("asymptotique_a_score", asymptotique_a_score))
+  print(paste("asymptotique_b_score", asymptotique_b_score))
+}
+
+```
+
+
+### Méthode delta 
+
+7. Simuler l'échantillon i.i.d de loi de Gamma($\alpha,\beta$) de taille $n=200$ avec $\alpha=2, \beta=2$. 
+Trouver l'estimateur et l’écart-type de l’estimateur de $\phi=\alpha/\beta$. Donner un intervalle de confiance à 95% de $\phi$.
+
+```{r methode gamma}
+alpha = 2
+beta = 2
+phi = alpha/beta
+n = 200
+gamma <- rgamma(n, alpha, beta)
+
+log_vgamma = function(X, a, b){
+  return(sum(log(dgamma(X, a, b))))
+}
+g = function(X){return(X[1]/X[2])}
+
+epsilon <- c(runif(1, 10^-8, 10^-7), runif(1, 10^-8, 10^-7))
+
+estim <- optim(c(1,1),function(theta) -log_vgamma(gamma, theta[1], theta[2]))
+
+deltag <- matrix(c((g(estim$par + epsilon[1]*l[1,]) - g(estim$par))/epsilon[1],
+                  (g(estim$par + epsilon[2]*l[2,]) - g(estim$par))/epsilon[2]), 
+                 nrow = 1)
+
+fisher <- matrix(c(trigamma(estim$par[1]), -1/estim$par[2], 
+                -1/estim$par[2], estim$par[1]/estim$par[2]**2), nrow = 2)
+
+invers_fisher <- (1/(fisher[1,1]*fisher[2,2] - fisher[1,2]*fisher[2,1])) * 
+  matrix(c(fisher[2,2], -fisher[1,2], -fisher[2,1], fisher[1,1]), nrow = 2)
+
+
+M_gamma=-invers_fisher
+estim_phi = g(estim$par)
+
+ecart_type_estimateur <- sqrt(deltag%*%invers_fisher%*%t(deltag))
+
+#intervalle de confiance asymptotique
+
+normal_asympto_phi <- c( estim_phi - (ecart_type_estimateur**2/sqrt(n))*qnorm(0.975),
+                       estim_phi + (ecart_type_estimateur**2/sqrt(n))*qnorm(0.975))
+
+estim_phi
+ecart_type_estimateur
+normal_asympto_phi
+```
+
+8. Simuler l'échantillons i.i.d de loi de Cauchy de paramètres $x_0 =10$ and $\alpha = 0.1$. (rappel de la densité : $f(x;x_0,\alpha)= \dfrac{1}{\pi} \dfrac{\alpha}{(x-x_0)^2+\alpha ^2}$,  avec $\alpha > 0$). Trouver l'estimateur et l’écart-type de l’estimateur pour: (i) $P(X > 100)$ et (ii) $x$ tel que $P(X \leq x) = 0.99$. Donner un intervalle de confiance à 95% pour chaque cas. 
+
+```{r Cauchy}
+x0 = 10
+alpha = 0.1
+parm = c(x0,alpha)
+cauchy <- rcauchy(n,10,0.1)
+
+log_vcauchy = function(X, a, b){
+  return(sum(log(dcauchy(X, a, b))))
+}
+
+epsilon <- c(runif(1, 10^-8, 10^-7), runif(1, 10^-8, 10^-7))
+
+estim <- optim(c(1,1),function(theta) -log_vcauchy(gamma, theta[1], theta[2]))
+
+#Pour P(X>100)
+g = function(X){return(pcauchy(100,X[1],X[2],lower.tail = FALSE))}
+deltag <- matrix(c((g(estim$par + epsilon[1]*l[1,]) - g(estim$par))/epsilon[1],
+                  (g(estim$par + epsilon[2]*l[2,]) - g(estim$par))/epsilon[2]), 
+                 nrow = 1)
+
+fisher <- matrix(c(1/2*estim$par[1],0,0,1/2*estim$par[1]),nrow=2)
+
+invers_fisher <- (1/(fisher[1,1]*fisher[2,2] - fisher[1,2]*fisher[2,1])) * 
+  matrix(c(fisher[2,2], -fisher[1,2], -fisher[2,1], fisher[1,1]), nrow = 2)
+
+M_cauchy = -invers_fisher
+estim_phi = g(estim$par)
+ecart_type_estimateur <- sqrt(deltag%*%invers_fisher%*%t(deltag))
+
+ecart_type_estimateur
+estim_phi
+
+#Pour P(X<=x)=0.99
+g = function(X){return(qcauchy(0.99))}
+deltag <- matrix(c((g(estim$par + epsilon[1]*l[1,]) - g(estim$par))/epsilon[1],
+                  (g(estim$par + epsilon[2]*l[2,]) - g(estim$par))/epsilon[2]), 
+                 nrow = 1)
+
+fisher <- matrix(c(1/2*estim$par[1],0,0,1/2*estim$par[1]),nrow=2)
+
+invers_fisher <- (1/(fisher[1,1]*fisher[2,2] - fisher[1,2]*fisher[2,1])) * 
+  matrix(c(fisher[2,2], -fisher[1,2], -fisher[2,1], fisher[1,1]), nrow = 2)
+
+M_cauchy = -invers_fisher
+estim_phi = g(estim$par)
+ecart_type_estimateur <- sqrt(deltag%*%invers_fisher%*%t(deltag))
+
+ecart_type_estimateur
+estim_phi
+```
+
+## Méthodes basées sur la simulation pour les intervalles de confiance
+
+9. Soit $X_i\sim \mbox{N}(\theta,1)$ avec $\theta\geq 0$. Montrer que l'estimateur du maximum de vraisemblance est $\max(\bar{\mathbf{x}},0)$. Est-ce que c'est un modèle régulier?
+Construire des intervalles de confiance à 95% pour $\theta$ par (i) bootstrap paramétrique (ii) bootstrap non paramétrique. Comparer les résultats.
+
+On sait que l'EMV pour une loi normale est simplement la moyenne empirique de l'échantillon $\frac{1}{N}\sum_{i=1}^NX_i$, mais il peut arriver que cette moyenne soit négative ce qui entrainerait un paramètre estimé négatif, ce qui est contradictoire avec l'énoncé. Donc on doit restreindre l'EMV classique à $\mathbb{R}+$, d'où l'EMV est $max(\bar x,0)$.
+
+La log vraisemblance n'est pas C2 en 0 car elle vaut 0 si un seul des x_i est inférieur à 0, donc c'est un modèle non régulier.
+
+On commence par préparer notre échantillon normale :
+
+```{r question-9-preparations}
+theta_0=3
+N=200 #Taille des échantillons réels et répliqués
+
+#Echantillon de base réutilisé dans les bootstraps
+echantillon_x=rnorm(N,theta_0, 1)
+print(paste("Echantillon normale de paramètre theta =",
+            theta_0, ", de taille N=", N));
+```
+
+Intervalle de confiance à 95% pour $\theta$ par Bootstrap paramétrique :
+
+```{r question-9-bootstrap-parametrique}
+intervalle_confiance_param = function(M, estimation_theta_0){
+  EMV_i_param=c()
+  #On simule M échantillons à partir de l'estimation du paramètre
+  for(i in 1:M)
+  {
+    #x_i simulé
+    simulation_i=rnorm(N, estimation_theta_0, 1)
+    #On calcule l'EMV correspondant à la ieme simulation
+    EMV_i=max(mean(simulation_i), 0)
+    EMV_i_param=c(EMV_i_param, EMV_i)
+  }
+  #On cherche ensuite les quantiles 2,5% et 97,5% de EMV_i
+  res_parametrique=quantile(EMV_i_param, c(0.025, 0.975))
+  #Le résultat est l'intervalle de confiance
+  c(res_parametrique[["2.5%"]], res_parametrique[["97.5%"]])
+}
+
+#Il faut d'abord estimer par l'EMV le paramètre réel theta_0
+EMV_0=max(mean(echantillon_x), 0)
+M=2000
+intervalle_param=intervalle_confiance_param(M, EMV_0)
+print(paste("Intervalle de confiance à 95% (paramétrique) : [",
+            intervalle_param[1],";",intervalle_param[2],"]"))
+```
+
+Intervalle de confiance à 95% pour $\theta$ par Bootstrap non-paramétrique :
+
+```{r question-9-bootstrap-non-parametrique}
+intervalle_confiance_non_param = function(M, enchantillon_x0){
+  EMV_i_nonparam=c()
+  for(i in 1:M)
+  {
+    #x_i simulé
+    simulation_i=sample(enchantillon_x0, size=N,replace=T)
+    #On calcule l'EMV correspondant à la ieme simulation
+    EMV_i=max(mean(simulation_i), 0)
+    EMV_i_nonparam=c(EMV_i_nonparam, EMV_i)
+  }
+  #On cherche ensuite les quantiles 2,5% et 97,5% de EMV_i
+  res_nonparametrique=quantile(EMV_i_nonparam, c(0.025, 0.975))
+  #Le résultat est l'intervalle de confiance
+  c(res_nonparametrique[["2.5%"]], res_nonparametrique[["97.5%"]])
+}
+
+M=2000
+intervalle_non_param=intervalle_confiance_non_param(M, echantillon_x)
+print(paste("Intervalle de confiance à 95% (non paramétrique) : [",
+            intervalle_non_param[1],";",intervalle_non_param[2],"]"))
+```
+Comparons les deux bootstraps en simulant plusieurs intervalles de confiance.
+
+```{r question-9-comparaison-bootstrap}
+#On calcule l'étendue de 10 intervalles de confiance et leur variance
+etendue_parametrique_list=c()
+for(i in 1:10)
+{
+  new_intervalle_param=intervalle_confiance_param(M, EMV_0)
+  
+  etendue_parametrique=abs(new_intervalle_param[2]-new_intervalle_param[1])
+  etendue_parametrique_list=c(etendue_parametrique_list, etendue_parametrique)
+}
+
+etendue_nonparametrique_list=c()
+for(i in 1:10)
+{
+  new_intervalle_nonparam=intervalle_confiance_non_param(M, echantillon_x)
+  
+  etendue_nonparametrique=
+    abs(new_intervalle_nonparam[2]-new_intervalle_nonparam[1])
+  etendue_nonparametrique_list=
+    c(etendue_nonparametrique_list, etendue_nonparametrique)
+}
+
+variance_etendue_parametrique=var(etendue_parametrique_list)
+variance_etendue_nonparametrique=var(etendue_nonparametrique_list)
+
+print(paste("Variance étendue (param)", variance_etendue_parametrique))
+print(paste("Variance étendue (non-param)", variance_etendue_nonparametrique))
+```
+
+On obtient un intervalle de confiance similaire dans les 2 cas de bootstrap avec une variance de l'étendue proche. Les deux méthodes sont équivalentes même si le bootstrap non-paramétrique n'a pas besoin de la loi de l'échantillon $x$ pour simuler d'autres échantillons, ce qui en fait une méthode plus forte. Il est possible que pour d'autres lois cependant, le bootstrap paramétrique soit plus précis que le non paramétrique.
+
+10. Pour l'échantillon i.i.d de loi de Gamma($\alpha,\beta$) de taille $n=200$ avec $\alpha=2, \beta=2$, construire l' intervalle de confiance à 95% pour $\phi=\alpha/\beta$. Évaluer la couverture par (i) normalité asymptotique  (ii) bootstrap paramétrique (iii) bootstrap non paramétrique.
+
+On procède de la même manière que précédemment.
+
+On prépare l'échantillon gamma :
+
+```{r question-10-prep}
+N=200
+alpha=2
+beta=2
+```
+
+Par normalité asymptotique :
+
+Il faut savoir que l'information de fisher est égale à $$I_X(\alpha, \beta)=\begin{pmatrix}trigamma(\alpha)&-\frac{1}{\beta}\\-\frac{1}{\beta}&\frac{\alpha}{\beta²}\end{pmatrix}$$
+
+D'où son inverse : $$I_X(\alpha, \beta)^{-1}=\frac{\beta²}{trigamma(\alpha)*\alpha-1}\begin{pmatrix}\frac{\alpha}{\beta²}&\frac{1}{\beta}\\\frac{1}{\beta}&trigamma(\alpha)\end{pmatrix}$$
+
+```{r question-10-asymptotique}
+#On écrit la log vraisemblance de la loi gamma
+logv_gamma=function(echantillonX, a, b){
+  return(sum(log(dgamma(echantillonX, shape=a, scale=b))))
+}
+intervalle_confiance_asymptotique_gamma=function(echantillon){
+  #On cherche le max de vraisemblance de la loi gamma
+  EMV_gamma=optim(c(1, 1),
+                  function(theta) -logv_gamma(echantillon,
+                                              theta[1], theta[2]))$par
+  alpha_estime=EMV_gamma[1]
+  beta_estime=EMV_gamma[2]
+  #On écrit ensuite les quantités nécessaires de la matrice inverse
+  #de l'information de fisher en les paramètres estimés
+  coeff_alpha=(beta_estime**2) / (trigamma(alpha_estime)*alpha_estime-1) * 
+    alpha_estime/(beta_estime**2)
+  coeff_beta=trigamma(alpha_estime)
+  
+  phi_estime=alpha_estime/beta_estime
+  
+  #Et on retourne l'intervalle de confiance
+  c(phi_estime - coeff_alpha/(coeff_beta*sqrt(N)*qnorm(0.975)), 
+    phi_estime + coeff_alpha/(coeff_beta*sqrt(N)*qnorm(0.975)))
+}
+```
+
+Par bootstrap paramétrique :
+
+```{r question-10-parametrique}
+intervalle_confiance_param_gamma =
+  function(M, estimation_alpha, estimation_beta){
+  phi_i_param=c()
+  #On simule M échantillons à partir de l'estimation du paramètre
+  for(i in 1:M)
+  {
+    #x_i simulé
+    simulation_i=rgamma(N, shape=estimation_alpha, scale=estimation_beta)
+    #On calcule l'EMV correspondant à la ieme simulation
+    EMV_i=optim(c(1, 1), function(theta) -logv_gamma(simulation_i,
+                                                     theta[1], theta[2]))$par
+    #On calcule phi estimé
+    alpha_i=EMV_i[1]
+    beta_i=EMV_i[2]
+    phi_i_param=c(phi_i_param, alpha_i/beta_i)
+  }
+  #On cherche ensuite les quantiles 2,5% et 97,5% de EMV_i
+  res_parametrique_phi=quantile(phi_i_param, c(0.025, 0.975))
+  #Le résultat est l'intervalle de confiance
+  c(res_parametrique_phi[["2.5%"]], res_parametrique_phi[["97.5%"]])
+}
+```
+Par bootstrap non-paramétrique :
+
+```{r question-10-nonparametrique}
+intervalle_confiance_nonparam_gamma = function(M, echantillon_x0){
+  phi_i_nonparam=c()
+  #On simule M échantillons à partir de l'estimation du paramètre
+  for(i in 1:M)
+  {
+    N=length(echantillon_x0)
+    #x_i simulé
+    simulation_i=sample(echantillon_x0, size=N,replace=T)
+    #On calcule l'EMV correspondant à la ieme simulation
+    EMV_i=optim(c(1, 1), function(theta) -logv_gamma(simulation_i,
+                                                     theta[1], theta[2]))$par
+    #On calcule phi estimé
+    alpha_i=EMV_i[1]
+    beta_i=EMV_i[2]
+    phi_i_nonparam=c(phi_i_nonparam, alpha_i/beta_i)
+  }
+  #On cherche ensuite les quantiles 2,5% et 97,5% de EMV_i
+  res_nonparametrique_phi=quantile(phi_i_nonparam, c(0.025, 0.975))
+  #Le résultat est l'intervalle de confiance
+  c(res_nonparametrique_phi[["2.5%"]], res_nonparametrique_phi[["97.5%"]])
+}
+```
+Calculons maintenant la couverture pour chacune des méthodes : (Attention c'est très long)
+
+```{r question10-reponse}
+contains=function(x, intervalle)
+{
+  return(x>=intervalle[1] && x<= intervalle[2])
+}
+Essais=30
+M=600
+print(paste("On évalue la couverture sur", Essais,
+            "intervalle(s) de confiance"))
+couv_asymp=0
+couv_param=0
+couv_nonparam=0
+phi_reel=alpha/beta
+for(j in 1:Essais)
+{
+  echantillon_j=rgamma(N, shape=alpha, scale=beta)
+  #On calcule l'EMV pour préparer l'intervalle par bootstrap paramétrique
+  EMV_0=optim(c(1, 1), function(theta) -logv_gamma(echantillon_j,
+                                                   theta[1], theta[2]))$par
+  #On calcule le phi estimé par l'EMV
+  alpha_estime=EMV_0[1]
+  beta_estime=EMV_0[2]
+  
+  I_asymp=intervalle_confiance_asymptotique_gamma(echantillon_j)
+  I_param=intervalle_confiance_param_gamma(M, alpha_estime, beta_estime)
+  I_nonparam=intervalle_confiance_nonparam_gamma(M, echantillon_j)
+  
+  couv_asymp=couv_asymp + contains(phi_reel, I_asymp)/Essais
+  couv_param=couv_param + contains(phi_reel, I_param)/Essais
+  couv_nonparam=couv_nonparam + contains(phi_reel, I_nonparam)/Essais
+}
+print(paste("Couverture par normalité asymptotique :", couv_asymp))
+print(paste("Couverture par bootstrap paramétrique :", couv_param))
+print(paste("Couverture par bootstrap non-paramétrique :", couv_nonparam))
+```
+
+11. Soit un mélange de lois normales défini par la densité
+\[
+f(x|\mu, p)=p N(x|\mu) + (1-p) N(x|0)\,,
+\]
+où $N(x|\mu)$ est la densité de $N(\mu,1)$ évaluée en $x$ et $0 < p < 1$. Simuler un échantillon i.i.d de taille $n=100$. Construire des intervalles de confiance "bootstrap" à 95% pour $\mu$ et $p$.
+
+
+On commence par définir la fonction qui permet de simuler un mélange de loi normales ainsi que sa log-vraisemblance.
+
+```{r question-11}
+rmelange_normales = function(n, mu, p){
+  res_bernouilli=rbinom(1,1,p)
+  normale_1=rnorm(n,mu,1)
+  normale_2=rnorm(n-res_bernouilli,0,1)
+  #Résultat de la simulation du mélange de normale
+  c(normale_1, normale_2)
+}
+dmelange_normales = function(X, mu, p){
+  dnormale_1=dnorm(X, mean=mu, sd=1)
+  dnormale_2=dnorm(X, mean=0, sd=1)
+  return(p*dnormale_1+(1-p)*dnormale_2)
+}
+N=100
+mu=4
+p=0.5#entre 0 exclus et 1 exclus
+logv_melange_normales = function(X, mu, p){
+  return(sum(log(dmelange_normales(X, mu, p))))
+}
+
+```
+
+Puis on construit par bootstrap paramétrique les intervalles de confiance :
+
+```{r question-11-bootstrap-param}
+intervalle_confiance_param_melangenormal = function(M, n,
+                                                    estimation_mu,
+                                                    estimation_p){
+  mu_param=c()
+  p_param=c()
+  #On simule M échantillons à partir de l'estimation du paramètre
+  for(i in 1:M)
+  {
+    #x_i simulé
+    simulation_i=rmelange_normales(n, estimation_mu, estimation_p)
+    #On calcule l'EMV correspondant à la ieme simulation
+    EMV_i=optim(c(3, 0.1), function(theta) -logv_melange_normales(simulation_i,
+                                                                theta[1],
+                                                                theta[2]))$par
+    #On calcule phi estimé
+    mu_i=EMV_i[1]
+    p_i=EMV_i[2]
+    
+    mu_param=c(mu_param, mu_i)
+    p_param=c(p_param, p_i)
+  }
+  #On cherche ensuite les quantiles 2,5% et 97,5% de EMV_i
+  res_parametrique_mu=quantile(mu_param, c(0.025, 0.975))
+  res_parametrique_p=quantile(p_param, c(0.025, 0.975))
+  #Le résultat est la liste des 2 intervalles de confiance
+  c( c(res_parametrique_mu[["2.5%"]], res_parametrique_mu[["97.5%"]]) ,
+     c(res_parametrique_p[["2.5%"]], res_parametrique_p[["97.5%"]]) )
+}
+```
+
+Puis on construit par bootstrap non-paramétrique les intervalles de confiance :
+
+```{r question-11-bootstrap-nonparam}
+intervalle_confiance_nonparam_melangenormal = function(M, echantillonX0){
+  mu_nonparam=c()
+  p_nonparam=c()
+  #On simule M échantillons à partir de l'estimation du paramètre
+  for(i in 1:M)
+  {
+    N=length(echantillonX0)
+    #x_i simulé
+    simulation_i=sample(echantillonX0, size=N,replace=T)
+    #On calcule l'EMV correspondant à la ieme simulation
+    EMV_i=optim(c(3, 0.1), function(theta) -logv_melange_normales(simulation_i,
+                                                                theta[1],
+                                                                theta[2]))$par
+    #On calcule phi estimé
+    mu_i=EMV_i[1]
+    p_i=EMV_i[2]
+    
+    mu_nonparam=c(mu_nonparam, mu_i)
+    p_nonparam=c(p_nonparam, p_i)
+  }
+  #On cherche ensuite les quantiles 2,5% et 97,5% de EMV_i
+  res_nonparametrique_mu=quantile(mu_nonparam, c(0.025, 0.975))
+  res_nonparametrique_p=quantile(p_nonparam, c(0.025, 0.975))
+  #Le résultat est la liste des 2 intervalles de confiance
+  c( c(res_nonparametrique_mu[["2.5%"]], res_nonparametrique_mu[["97.5%"]]) ,
+     c(res_nonparametrique_p[["2.5%"]], res_nonparametrique_p[["97.5%"]]) )
+}
+```
+
+Résultats :
+
+```{r question-11-reponse}
+echantillon_0=rmelange_normales(N, mu, p)
+#On calcule l'EMV correspondant à l'échantillon simulé
+EMV_i=optim(c(3, 0.01), function(theta) -logv_melange_normales(echantillon_0,
+                                                            theta[1],
+                                                            theta[2]))$par
+mu_estime=EMV_i[1]
+p_estime=EMV_i[2]
+
+M=2000
+
+intervals_param=intervalle_confiance_param_melangenormal(M, N, mu_estime,
+                                                         p_estime)
+intervals_nonparam=intervalle_confiance_nonparam_melangenormal(M, echantillon_0)
+print(paste("mu réel =", mu, ";mu estimé =", mu_estime))
+print(paste("p réel =", p, ";p estimé =", p_estime))
+
+print(paste("Intervalle pour mu par bootstrap paramétrique : [",
+            intervals_param[1],";",intervals_param[2],"]"))
+print(paste("Intervalle pour p par bootstrap paramétrique :",
+            intervals_param[3],";",intervals_param[4],"]"))
+
+print(paste(
+  "Intervalle à 95% pour mu par bootstrap non-paramétrique : ["
+            ,intervals_nonparam[1],";",intervals_nonparam[2],"]"))
+print(paste(
+  "Intervalle à 95% pour p par bootstrap non-paramétrique : [",
+            intervals_nonparam[3],";",intervals_nonparam[4],"]"))
+```
+
+12. Pour les données sur l'ozone ("summer_ozone.csv", "winter_ozone.csv"), nous voulons savoir s'il y a une différence entre les deux sites à chaque saison. 
+Soit $\theta_1$ and $\theta_2$ les différences moyennes du niveau d'ozone en été et en hiver respectivement. En utilisant les modèles que vous avez envisagés lors de la session précédente (ou autre si vous avez une proposition), construire des intervalles de confiance à 90% et 99% pour ces paramètres. Les intervalles incluent-ils zéro ?
+
+On suppose que les différences sur l'ozone suivent une loi Normale. On va procéder par bootstrap paramétrique pour construire les intervalles de confiance.
+
+```{r question-12-preparations}
+summer = read.csv("summer_ozone.csv")
+winter = read.csv("winter_ozone.csv")
+
+diff_summ=summer$RUR.SE-summer$NEUIL
+diff_winter=winter$RUR.SE-winter$NEUIL
+
+logv_diff=function(X, m, s){
+  return(sum(log(dnorm(X, m, s))))
+}
+```
+
+```{r question-12-bootstrap}
+theta_1=optim(c(50,50), function(theta) -logv_diff(diff_summ,
+                                                   theta[1], theta[2]))$par [1]
+theta_2=optim(c(100,100), function(theta) -logv_diff(diff_winter,
+                                                    theta[1], theta[2]))$par [1]
+
+#quantile entre 0 et 1
+intervalle_confiance_param_quantile = function(M, estimation_theta_0, quantile){
+  EMV_i_param=c()
+  #On simule M échantillons à partir de l'estimation du paramètre
+  for(i in 1:M)
+  {
+    #x_i simulé
+    simulation_i=rnorm(N, estimation_theta_0, 1)
+    #On calcule l'EMV correspondant à la ieme simulation
+    EMV_i=mean(simulation_i)
+    EMV_i_param=c(EMV_i_param, EMV_i)
+  }
+  #On cherche ensuite les quantiles 2,5% et 97,5% de EMV_i
+  res_parametrique=quantile(EMV_i_param, c(quantile, 1-quantile))
+  #Le résultat est l'intervalle de confiance
+  c(res_parametrique[[paste(quantile*100, "%", sep="")]],
+    res_parametrique[[paste((1-quantile)*100,"%", sep="")]])
+}
+print(paste("Theta 1 estimé :", theta_1, ";Theta 2 estimé :", theta_2))
+
+intervalle_summer_90=intervalle_confiance_param_quantile(M, theta_1, 0.10)
+intervalle_summer_95=intervalle_confiance_param_quantile(M, theta_1, 0.05)
+print(paste("Intervalle pour Theta 1 à 90% = [",
+            intervalle_summer_90[1], ";", intervalle_summer_90[2], "]"))
+print(paste("Intervalle pour Theta 1 à 95% = [",
+            intervalle_summer_95[1], ";", intervalle_summer_95[2], "]"))
+
+intervalle_winter_90=intervalle_confiance_param_quantile(M, theta_2, 0.10)
+intervalle_winter_95=intervalle_confiance_param_quantile(M, theta_2, 0.05)
+print(paste("Intervalle pour Theta 2 à 90% = [",
+            intervalle_winter_90[1], ";", intervalle_winter_90[2], "]"))
+print(paste("Intervalle pour Theta 2 à 95% = [",
+            intervalle_winter_95[1], ";", intervalle_winter_95[2], "]"))
+```
+
+On va procéder par normalite asymptotique et par student pour construire les intervalles de confiance.
+
+```{r question-12-normalite summer}
+
+n = length(diff_summ)
+
+#calcul de Xn et Sn
+Xn <- mean(diff_summ)
+Sn <- 0
+for(x in diff_summ){
+  Sn <- Sn + (x - Xn)**2
+}
+Sn <- sqrt(1/(n-1) * Sn)
+
+#intervalle de Student de degré n-1
+intervalle_de_student_95 <- c(Xn - Sn/sqrt(n)*qt(0.975, n-1), 
+                           Xn + Sn/sqrt(n)*qt(0.975, n-1))
+intervalle_de_student_90 <- c(Xn - Sn/sqrt(n)*qt(0.95, n-1), 
+                           Xn + Sn/sqrt(n)*qt(0.95, n-1))
+print(paste("Intervalle pour Theta 1 à 90% = [",
+            intervalle_de_student_90[1], ";", intervalle_de_student_90[2], "]"))
+print(paste("Intervalle pour Theta 1 à 95% = [",
+            intervalle_de_student_95[1], ";", intervalle_de_student_95[2], "]"))
+
+
+#intervalle de confiance asymptotique
+intervalle_normalite_asymptotique_95 <- c(Xn - Sn/sqrt(n)*qnorm(0.975), 
+                                       Xn + Sn/sqrt(n)*qnorm(0.975))
+intervalle_normalite_asymptotique_90 <- c(Xn - Sn/sqrt(n)*qnorm(0.95), 
+                                       Xn + Sn/sqrt(n)*qnorm(0.95))
+print(paste("Intervalle pour Theta 2 à 90% = [",
+            intervalle_normalite_asymptotique_90[1], ";", 
+            intervalle_normalite_asymptotique_90[2], "]"))
+print(paste("Intervalle pour Theta 2 à 95% = [",
+            intervalle_normalite_asymptotique_95[1], ";", 
+            intervalle_normalite_asymptotique_95[2], "]"))
+```
+
+```{r question-12 normalite winter}
+n = length(diff_winter)
+
+#calcul de Xn et Sn
+Xn <- mean(diff_winter)
+Sn <- 0
+for(x in diff_winter){
+  Sn <- Sn + (x - Xn)**2
+}
+Sn <- sqrt(1/(n-1) * Sn)
+
+#intervalle de Student de degré n-1
+intervalle_de_student_95 <- c(Xn - Sn/sqrt(n)*qt(0.975, n-1), 
+                           Xn + Sn/sqrt(n)*qt(0.975, n-1))
+intervalle_de_student_90 <- c(Xn - Sn/sqrt(n)*qt(0.95, n-1), 
+                           Xn + Sn/sqrt(n)*qt(0.95, n-1))
+print(paste("Intervalle pour Theta 1 à 90% = [",
+            intervalle_de_student_90[1], ";", intervalle_de_student_90[2], "]"))
+print(paste("Intervalle pour Theta 1 à 95% = [",
+            intervalle_de_student_95[1], ";", intervalle_de_student_95[2], "]"))
+
+
+#intervalle de confiance asymptotique
+intervalle_normalite_asymptotique_95 <- c(Xn - Sn/sqrt(n)*qnorm(0.975), 
+                                       Xn + Sn/sqrt(n)*qnorm(0.975))
+intervalle_normalite_asymptotique_90 <- c(Xn - Sn/sqrt(n)*qnorm(0.95), 
+                                       Xn + Sn/sqrt(n)*qnorm(0.95))
+print(paste("Intervalle pour Theta 2 à 90% = [",
+            intervalle_normalite_asymptotique_90[1], ";", 
+            intervalle_normalite_asymptotique_90[2], "]"))
+print(paste("Intervalle pour Theta 2 à 95% = [",
+            intervalle_normalite_asymptotique_95[1], ";", 
+            intervalle_normalite_asymptotique_95[2], "]"))
+```

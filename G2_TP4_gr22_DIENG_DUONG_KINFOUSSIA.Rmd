@@ -1,0 +1,381 @@
+---
+title: "G2_TP4_gr22_DIENG_DUONG_KINFOUSSIA"
+author: "Willy Kinfoussia, Seydina Dieng, Ngo Duong"
+date: "08/04/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Vraisemblance pour plusieurs paramètres
+
+# Loi Normal
+
+1.
+Construction du test de Neyman-Pearson:
+\begin{equation*}
+\begin{cases} 
+H_0: \mu = \mu_0
+H_1: \mu = \mu_1
+\end{cases} 
+\end{equation*} 
+où $\mu_1 > \mu_0$
+Calcul de la statistique de test
+On sait que : $$f_{Y}(x;\mu,\sigma) = \frac{1}{x \sigma \sqrt{2 \pi}} \exp\left(- \frac{(\ln x - \mu)^2}{2\sigma^2}\right)$$
+Donc la région de rejet est:
+$$W=\{(x_1,...,x_n);\exp(-\frac{\mu_0 - \mu_1}{\sigma^2}\sum_{i=1}^{n} \ln{x_i} + \frac{\mu_0^2-\mu_1^2}{2\sigma^2})>k\}$$
+$$=\{(x_1,...,x_n); \exp(-\frac{\mu_0 - \mu_1}{\sigma^2}\sum_{i=1}^{n} \ln({x_i})) \exp(\frac{\mu_0^2-\mu_1^2}{2\sigma^2})>k \}$$
+$$=\{(x_1,...,x_n);-\frac{\mu_0 - \mu_1}{\sigma^2}\sum_{i=1}^{n} \ln({x_i})> \ln(\frac{k}{\exp(\frac{\mu_0^2-\mu_1^2}{2\sigma^2})}) \}$$
+$$=\{(x_1,...,x_n);\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})>-\frac{\sigma^2}{n(\mu_0 - \mu_1)}\ln(\frac{k}{\exp(\frac{\mu_0^2-\mu_1^2}{2\sigma^2})})\}$$
+$$={(x_1,...,x_n);\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})>c}$$ où 
+$c=\frac{\mu_0+\mu_1}{2n}\ln(k)$
+La statistique de test est $T(X)=\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})$
+Détermination de $K_alpha$: sous l'hypothèse $H_0$, $\overline{\ln X_n}$ suit une loi $\mathcal{N}(\mu_0,\frac{\sigma_0^2}{n})$. Donc:
+$$\mathbb{P}_{H_0}(W) = \mathbb{P}_{H_0} (\frac{1}{n}\sum_{i=1}^{n} \ln({X_i})>K_\alpha)$$
+Avec $\overline{\ln X_n}=\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})$, on a:
+$$\mathbb{P}_{H_0}(\frac{\sqrt{n}(\overline{\ln X_n}-\mu_0)}{\sigma_0} > \frac{\sqrt{n}(K_\alpha -\mu_0)}{\sigma_0})$$
+$$=1-\phi(\frac{\sqrt{n}(K_\alpha -\mu_0)}{\sigma_0})=\alpha.$$ où $\phi$ est la fonction de répartition de la gaussienne centrée réduite. D'où $K_\alpha = \mu_0 + \frac{\sigma_0}{\sqrt(n)}\phi^{-1}(1-\alpha)$
+Calcul de $\beta$:  sous l'hypothèse $H_1$, $\overline{\ln X_n}$ suit une loi $\mathcal{N}(\mu_1,\frac{\sigma_0^2}{n})$. Donc: $$\beta = \mathbb{P}_{H_1}(W) = \mathbb{P}_{H_1} (\overline{\ln X_n}>K_\alpha) = 1 - \phi(\frac{\sqrt{n}(\mu_0 - \mu_1)}{\sigma_0} + \phi^{-1}(1-\alpha))$$
+
+```{r alpha_beta}
+n=10
+sigma_0=1
+mu_0=0
+mu_1=0.1
+
+#alpha<-1-pnorm()
+
+alpha <- 
+K_alpha <- mu_0 + (sigma_0/sqrt(n))*pnorm(1-alpha,mu_0,sigma_0)
+beta <- 1-pnorm(((sqrt(n)*(mu_0-mu_1))/sigma_0)+inverse(pnorm(1-alpha,mu_1,sigma_0)))
+
+K_alpha
+beta
+```
+
+2.
+```{r test}
+M=100
+n=10
+# simulate under H_0
+Tsim = rep(0, M)
+for (i in 1:M){
+  # simulate under H_0
+  x = rnorm(n, mu0, sig0)
+  # test statistic
+  Tsim[i] = (1/n) * sum(x)
+}
+
+# proportion of wrong rejection
+alpha_hat = mean(Tsim>K_alpha)
+alpha_hat
+# simulate under H_1
+Tsim1 = rep(0, M)
+for (i in 1:M){
+# simulate under H_1
+x = rnorm(n, mu1, sig0)
+# test statistic
+Tsim1[i] = (1/n) * sum(x)
+}
+# proportion of correct rejection
+beta_hat = mean(Tsim1>K_alpha)
+beta_hat
+
+
+```
+3.
+Pour établir la règle de décision avec p-val, il faut évaluer la statistique de test $T(x)$:
+-Si $T(x) \geq K_\alpha$ alors $p - val \leq \alpha$
+-Si $T(x) \leq K_\alpha$ alors $p - val \geq \alpha$
+On rejette l'hypothèse $H_0$ dans le cas où $p - val \leq \alpha$ et on la garde sinon.
+
+1. Simulation de n variables idd de loi $N(\mu, \sigma²)$
+
+On choisit $n=25$ avec $\theta_0=(0,1)$, $\theta_1=(1,2)$, $\theta_2=(10,5)$, $\theta_3=(0,5)$
+
+```{r}
+#Simulation de l'échantillon + histogramme
+n=25
+mu_vrai=0
+sig_vrai=1
+X_vrai=rnorm(n, mean=mu_vrai, sig_vrai)
+hist(X_vrai, freq=FALSE, ylim=c(0,0.7))
+#Comparaisons avec différents paramètres théta
+mu=c(0,1,10,0)
+sig=c(1,2,5,5)
+couleurs=c("blue","red","green","purple")
+indices=1:length(mu)
+for(i in indices)
+{
+  X=rnorm(n, mean=mu[i], sd=sig[i])
+  den_X=density(X)
+  lines(den_X, col=couleurs[i])
+}
+```
+
+2. log-vraisemblance pour $(\theta,x)$
+
+```{r log-vraisemblance}
+logv = function(mu, sig, X){
+n=length(X)
+res=-n*log(sig)-n*log(2*pi)/2-1/(2*sig**2)*sum((X-mu)**2)
+res
+}
+```
+
+```{r calcul log-vraisemblance}
+mu=c(0:6)
+sig=c(1:10)
+res=c()
+max_sur_sigma=c()
+for(m in mu)
+{
+  logv_mu_fixed=function(s){logv(m, s, X_vrai)}
+  max_sur_sigma=optimize(logv_mu_fixed, sig, maximum=TRUE)["objective"]
+  
+  for(s in sig)
+  {
+    res=c(res, logv(m, s, X_vrai))
+  }
+}
+M_res=matrix(res, nrow=length(mu), ncol=length(sig), byrow=TRUE)
+persp(mu, sig, M_res, col=rev(topo.colors(500)))
+#Point max
+max_sur_sigma
+```
+3. Faire varier l'échantillon
+
+5. En utilisant la fonction `optim`, trouver la valeur de $\theta$ la plus probable pour l'échantillon de normal. En fait, l'estimateur est defini explicitement pour le cas normal. Verifiez la solution numerique avec la solution analytique. 
+
+
+```{r optim}
+fr <- function(x) {   ## Rosenbrock Banana function
+    x1 <- x[1]
+    x2 <- x[2]
+    100 * (x2 - x1 * x1)^2 + (1 - x1)^2
+}
+
+res <- optim(c(0,1), fr)
+res$par[1]
+m <- c(0,1)
+m <- c(m,2)
+m
+
+```
+
+6. Testez avec des échantillons variés et trace l'histogramme de l'estimateur. 
+Variez la taille de l'échantillons $n=10, 25, 50, 100$ et comparez l'écart entre la valeur théorique attendue et la valeur obtenue. Que remqrauez-vous?
+
+```{r test optim}
+
+diffmoy <- c()
+diffecarttype <- c()
+for(m in c(0,5,8)){
+  for(sigma in c(2,4,5)){
+    for(n in c(10,25,50,100)){
+      norm <- rnorm(n, m, sigma)
+      lv <- log_v(norm)
+      res <- optim(c(1,1), lv)$par
+      diffmoy <- c(diffmoy, m - res[1])
+      diffecarttype <- c(diffecarttype, sigma - res[2])
+    }
+  }
+}
+hist(diffmoy)
+hist(diffecarttype)
+
+```
+
+### La Loi Gamma
+
+7. Soit $X_1,\ldots,X_n$ un échantillon de $n$ variables indépendentes de loi de Gamma($\alpha, \beta$) où $\theta = (\alpha, \beta)$ est inconnue. Simuler un échantillon i.i.d de taille $n=25$ avec $\theta_0 = (3, 1)$. Présentez l'histogramme des données simulées. Choisir quatre paramètres candidats, disons, $\theta_0$ (vrai) $\theta_1, \theta_2, \theta_3$. Comparer l'histogramme avec les densités candidates. Que remarquez-vous? 
+
+
+```{r loi gamma}
+
+plot.new()
+gamma0 <- rgamma(25, 3, 1)
+hist(gamma0, freq = FALSE, ylim = c(0,1))
+
+
+densite0 <- density(gamma0)
+lines(densite0, col = "blue")
+
+gamma1 <- rgamma(25, 1, 1)
+densite1 <- density(gamma1)
+lines(densite1, col = "red")
+
+gamma2 <- rgamma(25, 5, 1)
+densite2 <- density(gamma2)
+lines(densite2, col = "green")
+
+gamma3 <- rgamma(25, 3, 3)
+densite3 <- density(gamma3)
+lines(densite3, col = "purple")
+
+
+
+```
+
+
+
+
+8. Ecrire la log vraisemblance. Générez une fonction de log-vraisemblance avec les arguments $(\theta, x)$, qui donne la log vraisemblance d'un échantillon pour une valeur donnée de $\theta=(\alpha,\beta)$ et les donnéé $x = (x_1,\ldots,x_n)$.
+Calculez la log-vraisemblance des échantillons que vous avez générés, en faissant varier un paramètre à la fois. Présentez graphiquement la surface de log-vraisemblance que vous calculez et markez le point maximum.
+Que remarquez-vous? Est-ce qu'il y a quelque chose de notable par rapport au cas normal?
+
+```{r log_v}
+
+function_gamma <- function(x){
+  if(x <= 0){
+    return(1)
+  }else{
+    return(function_gamma(x-1)*x)
+  }
+}
+
+log_vgamma <- function(X, a, b){
+  return(sum(log(dgamma(X, a, b))))
+}
+
+
+dataloggamma <- c()
+gamma <- rgamma(25, 3, 1)
+
+for(a in 1:10){
+  for(b in 1:10){
+    dataloggamma <- c(dataloggamma, log_vgamma(gamma, a, b))
+  }
+}
+mat <- matrix(data = dataloggamma, nrow = 10)
+mat
+image(1:10, 1:10, mat, xlab = "alpha", ylab = "beta")
+persp(1:10, 1:10, mat)
+contour(1:10,1:10, mat, nlevels = 25)
+
+```
+
+9. Variez l'échantillon. Présentez l'histogramme des données simulées et la surface de vraisemblance correspondante. Que remarquez-vous?
+
+```{r varier echantillon}
+allgamma <- matrix(data = c(gamma0, gamma1, gamma2, gamma3), nrow = length(gamma0))
+for(i in 1:length(allgamma[1,])){
+  hist(allgamma[,i])
+  dataloggamma <- c()
+  for(a in 1:10){
+    for(b in 1:10){
+      dataloggamma <- c(dataloggamma, log_vgamma(allgamma[,i], a, b))
+    }
+  }
+  mat <- matrix(data = dataloggamma, nrow = 10)
+  image(1:10, 1:10, mat, xlab = "alpha", ylab = "beta")
+  persp(1:10, 1:10, mat)
+  contour(1:10,1:10, mat, nlevels = 25)
+}
+```
+
+10. Répétez pour les tailles d'échantillon croissantes $n = 10, 25, 50, 100$. Commentez.
+
+```{r varier echantillon2}
+
+for(n in c(10,25,50,100)){
+  dataloggamma <- c()
+  gamma <- rgamma(n, 3, 1)
+  hist(gamma)
+  for(a in 1:10){
+    for(b in 1:10){
+      dataloggamma <- c(dataloggamma, log_vgamma(gamma, a, b))
+    }
+  }
+  mat <- matrix(data = dataloggamma, nrow = 10)
+  image(1:10, 1:10, mat, xlab = "alpha", ylab = "beta")
+  persp(1:10, 1:10, mat)
+  contour(1:10,1:10, mat, nlevels = 25)
+}
+
+```
+
+
+11. En utilisant la fonction `optim`, trouver la valeur de $\theta$ la plus probable pour l'échantillon de normal. En fait, l'estimateur est defini explicitement pour le cas normal. Verifiez la solution numerique avec la solution analytique. 
+
+```{r estimateur}
+log_v_inversgamma <- function(X, a, b){
+  return (-sum(log(dgamma(X, a, b))))
+}
+
+res <- optim(c(1, 1), function(theta) log_v_inversgamma(gamma0, theta[1], theta[2]))
+res
+```
+
+
+12. Testez avec des échantillons variés et trace l'histogram de l'estimateur. Variez la taille de l'échantillons $n=10, 25, 50, 100$. et comparez l'écart entre la valeur théorique attendue et la valeur obtenue. Que remarquez-vous?
+
+```{r hist estimateur}
+
+for(n in c(10,25,50,100)){
+  estimA <- c()
+  estimB <- c()
+  for(a in c(2,3,5)){
+    for(b in c(2,3,5)){
+      gamma <- rgamma(n,a,b)
+      res <- optim(c(1, 1), function(theta) log_v_inversgamma(gamma, theta[1], theta[2]))
+      estimA <- c(estimA, abs(res$par[1]-a))
+      estimB <- c(estimB, abs(res$par[2]-b))
+    }
+  }
+  hist(estimA, freq = FALSE, xlab = paste(c("estimation de a avec n = ", n)))
+  hist(estimB, freq = FALSE, xlab = paste(c("estimation de b avec n = ", n)))
+}
+
+
+```
+
+On remarque que plus on augmente la taille de l'échantillon plus l'estimateur est fiable.
+
+
+### Application aux données sur l'ozone
+
+13. Utilisez les données sur l'ozone ("summer_ozone.csv", "winter_ozone.csv") pour trouver l'estimateur de maximum de vraisemblance pour chaque site à chaque saison si on considére que c’est (i) une loi normale et (ii) une loi log normale. Comparez les résultats. Quel modèle préférez-vous et pourquoi?
+
+```{r summer winter}
+summer <- read.csv("summer_ozone.csv")
+winter <- read.csv("winter_ozone.csv")
+
+log_vnormale <- function(X, a, b){
+  return(-sum(log(dnorm(X, a, b))))
+}
+
+log_vlognormale <- function(X, a, b){
+  return(-sum(log(dlnorm(X, a, b))))
+}
+
+#Loi normale
+
+res_summer_neuil <- optim(c(100,100), function(theta) log_vnormale(summer$NEUIL, theta[1], theta[2]))
+res_summer_rur <- optim(c(100,100), function(theta) log_vnormale(summer$RUR.SE, theta[1], theta[2]))
+res_winter_neuil <- optim(c(100,100), function(theta) log_vnormale(winter$NEUIL, theta[1], theta[2]))
+res_winter_rur <- optim(c(100,100), function(theta) log_vnormale(winter$RUR.SE, theta[1], theta[2]))
+
+vraisemblance_valeur <- c(res_summer_neuil$value, res_summer_rur$value, res_winter_neuil$value, res_winter_rur$value)
+hist(vraisemblance_valeur)
+
+#Loi log normale
+
+res_summer_neuil <- optim(c(10,10), function(theta) log_vlognormale(summer$NEUIL, theta[1], theta[2]))
+res_summer_rur <- optim(c(10,10), function(theta) log_vlognormale(summer$RUR.SE, theta[1], theta[2]))
+#res_winter_neuil <- optim(c(5,5), function(theta) log_vlognormale(winter$NEUIL, theta[1], theta[2]))
+res_winter_rur <- optim(c(10,10), function(theta) log_vlognormale(winter$RUR.SE, theta[1], theta[2]))
+
+vraisemblance_valeur <- c(res_summer_neuil$value, res_summer_rur$value, res_winter_rur$value)
+hist(vraisemblance_valeur)
+
+winter$NEUIL # présence de 0
+dlnorm(winter$NEUIL, 0, 10) # probabilité que 0 soit atteint par un loi log-normale est impossible
+log_vlognormale(winter$NEUIL, 0,10) # vraisemblance infinie 
+
+
+```
+
+

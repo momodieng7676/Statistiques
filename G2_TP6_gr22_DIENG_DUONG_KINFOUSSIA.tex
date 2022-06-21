@@ -1,0 +1,231 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\title{G2\_TP6\_gr22\_DIENG\_DUONG\_KINFOUSSIA}
+\author{Willy Kinfoussia, Seydina Dieng, Ngo Duong}
+\date{13/05/2022}
+
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={G2\_TP6\_gr22\_DIENG\_DUONG\_KINFOUSSIA},
+  pdfauthor={Willy Kinfoussia, Seydina Dieng, Ngo Duong},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\maketitle
+
+\hypertarget{tests-dhypothuxe8se}{%
+\subsection{Tests d'Hypothèse}\label{tests-dhypothuxe8se}}
+
+\hypertarget{tests-paramuxe9triques}{%
+\subsubsection{Tests paramétriques}\label{tests-paramuxe9triques}}
+
+Construction du test de Neyman-Pearson: \begin{equation*}
+\begin{cases} 
+H_0: \mu = \mu_0
+H_1: \mu = \mu_1
+\end{cases} 
+\end{equation*} où \(\mu_1 > \mu_0\) Calcul de la statistique de test On
+sait que :
+\(f_{Y}(x;\mu,\sigma) = \frac{1}{x \sigma \sqrt{2 \pi}} \exp\left(- \frac{(\ln x - \mu)^2}{2\sigma^2}\right)\)
+Donc la région de rejet est:
+\(W=\{(x_1,...,x_n);\exp(-\frac{\mu_0 - \mu_1}{\sigma^2}\sum_{i=1}^{n} \ln{x_i} + \frac{\mu_0^2-\mu_1^2}{2\sigma^2})>k\}\)
+\(=\{(x_1,...,x_n); \exp(-\frac{\mu_0 - \mu_1}{\sigma^2}\sum_{i=1}^{n} \ln({x_i})) \exp(\frac{\mu_0^2-\mu_1^2}{2\sigma^2})>k \}\)
+\(=\{(x_1,...,x_n);-\frac{\mu_0 - \mu_1}{\sigma^2}\sum_{i=1}^{n} \ln({x_i})> \ln(\frac{k}{\exp(\frac{\mu_0^2-\mu_1^2}{2\sigma^2})}) \}\)
+\(=\{(x_1,...,x_n);\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})>-\frac{\sigma^2}{n(\mu_0 - \mu_1)}\ln(\frac{k}{\exp(\frac{\mu_0^2-\mu_1^2}{2\sigma^2})})\}\)
+\(=\{(x_1,...,x_n);\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})>c}\) où
+\(c=\frac{\mu_0+\mu_1}{2n}\ln(k)\) La statistique de test est
+\(T(X)=\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})\) Détermination de
+\(K_alpha\): sous l'hypothèse \(H_0\), \(\overline{\ln X_n}\) suit une
+loi \(\mathcal{N}(\mu_0,\frac{\sigma_0^2}{n})\). Donc:
+\(\mathbb{P}_{H_0}(W) = \mathbb{P}_{H_0} (\frac{1}{n}\sum_{i=1}^{n} \ln({X_i})>K_\alpha)\)
+Avec \(\overline{\ln X_n}=\frac{1}{n}\sum_{i=1}^{n} \ln({x_i})\), on a:
+\(\mathbb{P}_{H_0}(\frac{\sqrt{n}(\overline{\ln X_n}-\mu_0)}{\sigma_0} > \frac{\sqrt{n}(K_\alpha -\mu_0)}{\sigma_0})\)
+\(=1-\phi(\frac{\sqrt{n}(K_\alpha -\mu_0)}{\sigma_0})=\alpha.\) où
+\(\phi\) est la fonction de répartition de la gaussienne centrée
+réduite. D'où
+\(K_\alpha = \mu_0 + \frac{\sigma_0}{\sqrt(n)}\phi^{-1}(1-\alpha)\)
+Calcul de \(\beta\): sous l'hypothèse \(H_1\), \(\overline{\ln X_n}\)
+suit une loi \(\mathcal{N}(\mu_1,\frac{\sigma_0^2}{n})\). Donc:
+\(\beta = \mathbb{P}_{H_1}(W) = \mathbb{P}_{H_1} (\overline{\ln X_n}>K_\alpha) = 1 - \phi(\frac{\sqrt{n}(\mu_0 - \mu_1)}{\sigma_0} + \phi^{-1}(1-\alpha))\)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(cars)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      speed           dist       
+##  Min.   : 4.0   Min.   :  2.00  
+##  1st Qu.:12.0   1st Qu.: 26.00  
+##  Median :15.0   Median : 36.00  
+##  Mean   :15.4   Mean   : 42.98  
+##  3rd Qu.:19.0   3rd Qu.: 56.00  
+##  Max.   :25.0   Max.   :120.00
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{6}
+\tightlist
+\item
+  Compléter le test non-paramétrique pour les données dur l'ozone, en
+  été et en hiver. Quelles sont les hyptohèses de ce test? La conclusion
+  est-elle cohérente avec celle du test paramétrique ?
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{summer\_ozone }\OtherTok{=} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"summer\_ozone.csv"}\NormalTok{)}
+\NormalTok{winter\_ozone }\OtherTok{=} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"winter\_ozone.csv"}\NormalTok{)}
+
+\NormalTok{summer\_rur }\OtherTok{=}\NormalTok{ summer\_ozone}\SpecialCharTok{$}\NormalTok{RUR.SE}
+\NormalTok{summer\_neuil }\OtherTok{=}\NormalTok{ summer\_ozone}\SpecialCharTok{$}\NormalTok{NEUIL}
+\NormalTok{winter\_rur }\OtherTok{=}\NormalTok{ winter\_ozone}\SpecialCharTok{$}\NormalTok{RUR.SE}
+\NormalTok{winter\_neuil }\OtherTok{=}\NormalTok{ winter\_ozone}\SpecialCharTok{$}\NormalTok{NEUIL}
+
+\NormalTok{M }\OtherTok{=} \DecValTok{2}
+\NormalTok{alpha }\OtherTok{=} \FloatTok{0.05}
+\NormalTok{n }\OtherTok{=} \FunctionTok{length}\NormalTok{(summer\_rur)}
+\NormalTok{n2 }\OtherTok{=} \FunctionTok{length}\NormalTok{(winter\_rur)}
+
+\NormalTok{n3 }\OtherTok{=} \FunctionTok{length}\NormalTok{(summer\_neuil)}
+\NormalTok{n4 }\OtherTok{=} \FunctionTok{length}\NormalTok{(winter\_neuil)}
+
+\NormalTok{D0 }\OtherTok{=}\NormalTok{ (}\DecValTok{1}\SpecialCharTok{/}\NormalTok{n)}\SpecialCharTok{*}\NormalTok{(summer\_rur }\SpecialCharTok{{-}}\NormalTok{ summer\_neuil)}
+
+\NormalTok{allD }\OtherTok{=} \FunctionTok{c}\NormalTok{(D0)}
+\NormalTok{TD }\OtherTok{=} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\SpecialCharTok{/}\NormalTok{n }\SpecialCharTok{*} \FunctionTok{sum}\NormalTok{(D0))}
+
+\ControlFlowTok{for}\NormalTok{(i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{M)\{}
+\NormalTok{  D }\OtherTok{=} \FunctionTok{c}\NormalTok{()}
+  \ControlFlowTok{for}\NormalTok{(j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{n)\{}
+\NormalTok{    D }\OtherTok{=} \FunctionTok{c}\NormalTok{(D, }\FunctionTok{sample}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{), }\DecValTok{1}\NormalTok{)}\SpecialCharTok{*}\NormalTok{D0[j])}
+\NormalTok{  \}}
+\NormalTok{  allD }\OtherTok{=} \FunctionTok{c}\NormalTok{(D0, D)}
+\NormalTok{  TD }\OtherTok{=} \FunctionTok{c}\NormalTok{(TD, }\DecValTok{1}\SpecialCharTok{/}\NormalTok{n }\SpecialCharTok{*} \FunctionTok{sum}\NormalTok{(D))}
+\NormalTok{\}}
+
+\NormalTok{allD }\OtherTok{=} \FunctionTok{matrix}\NormalTok{(allD, }\AttributeTok{ncol =}\NormalTok{ M)}
+
+\CommentTok{\# quantile ka = quantile(1 {-} alpha) loi  de T(X)}
+\NormalTok{ka }\OtherTok{=} \DecValTok{0}
+\ControlFlowTok{for}\NormalTok{(i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{M)\{}
+\NormalTok{  p }\OtherTok{=} \DecValTok{0}
+  \ControlFlowTok{for}\NormalTok{(j }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\NormalTok{M)\{}
+    \ControlFlowTok{if}\NormalTok{(TD[j] }\SpecialCharTok{\textless{}}\NormalTok{ TD[i])\{}
+\NormalTok{      p }\OtherTok{=}\NormalTok{ p}\SpecialCharTok{+}\DecValTok{1}
+\NormalTok{    \}}
+\NormalTok{  \}}
+  \ControlFlowTok{if}\NormalTok{(p }\SpecialCharTok{==} \DecValTok{100}\SpecialCharTok{*}\NormalTok{(}\DecValTok{1}\SpecialCharTok{{-}}\NormalTok{alpha))\{}
+\NormalTok{    ka }\OtherTok{=}\NormalTok{ TD[i]}
+    \ControlFlowTok{break}
+\NormalTok{  \}}
+\NormalTok{\}}
+
+\FunctionTok{print}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"T(X) = "}\NormalTok{,TD[}\DecValTok{1}\NormalTok{],}\StringTok{" et ka = "}\NormalTok{,ka))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "T(X) =  0.0126596455133337  et ka =  0"
+\end{verbatim}
+
+\end{document}
